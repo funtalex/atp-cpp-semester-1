@@ -1,6 +1,6 @@
 #include <iostream>
  
-bool IndexOk(size_t* used_index, size_t cur_index) {
+bool isIndexOk(size_t* used_index, size_t cur_index) {
   for (size_t i = 0; i < cur_index; ++i) {
     if (used_index[cur_index] == used_index[i]) {
       return false;
@@ -11,19 +11,15 @@ bool IndexOk(size_t* used_index, size_t cur_index) {
  
 void SumOfProducts(int** big_array, size_t* used_index, size_t* sizes, size_t num_arrays,
                    size_t cur_index, size_t cur_product, int& ans) {
-  if (cur_index == num_arrays - 1) {
-    for (size_t i = 0; i < sizes[cur_index]; ++i) {
-      used_index[cur_index] = i;
-      if (IndexOk(used_index, cur_index)) {
-        ans += cur_product * big_array[cur_index][i];
-      }
-    }
-    return;
-  }
   for (size_t i = 0; i < sizes[cur_index]; ++i) {
     used_index[cur_index] = i;
-    if (IndexOk(used_index, cur_index)) {
-      SumOfProducts(big_array, used_index, sizes, num_arrays, cur_index + 1, cur_product * big_array[cur_index][i], ans);
+    if (isIndexOk(used_index, cur_index)) {
+      if (cur_index == num_arrays - 1) {
+      ans += cur_product * big_array[cur_index][i];
+      }
+      else {
+        SumOfProducts(big_array, used_index, sizes, num_arrays, cur_index + 1, cur_product * big_array[cur_index][i], ans);
+      }
     }
   }
 }
