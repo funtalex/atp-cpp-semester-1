@@ -70,63 +70,19 @@ public:
   }
  
   BigInteger& operator+=(long long num) {
-    int num_sign = (num >= 0 ? 1 : -1);
-    int res_sign = (sign_ == num_sign ? sign_ : sign_ * cmp_abs_(num));
-    long long carry = 0;
-    for (size_t i = 0; carry != 0 || num != 0; ++i) {
-      long long sum = res_sign * (sign_ * (i < size_ ? bigint_[i] : 0) +
-        num_sign * (num % base_)) + carry;
-      carry = (sum < 0 ? -1 : sum / base_);
-      Put(i, (sum + base_) % base_);
-      num /= base_;
-    }
-    delZeros();
-    sign_ = res_sign;
-    return *this;
+    return *this = PlusLongLong(num, true);
   }
  
   BigInteger& operator+=(const BigInteger& num) {
-    int res_sign = (sign_ == num.sign_ ? sign_ : sign_ * cmp_abs_(num));
-    long long carry = 0;
-    for (size_t i = 0; i < num.size_ || carry != 0; ++i) {
-      long long sum = res_sign * (sign_ * (i < size_ ? bigint_[i] : 0) +
-        num.sign_ * (i < num.size_ ? num.bigint_[i] : 0)) + carry;
-      carry = (sum < 0 ? -1 : sum / base_);
-      Put(i, (sum + base_) % base_);
-    }
-    delZeros();
-    sign_ = res_sign;
-    return *this;
+    return *this = PlusBigInt(num, true);
   }
  
   BigInteger& operator-=(long long num) {
-    int num_sign = (num >= 0 ? 1 : -1);
-    int res_sign = (sign_ != num_sign ? sign_ : num_sign * cmp_abs_(num));
-    long long carry = 0;
-    for (size_t i = 0; carry != 0 || num != 0; ++i) {
-      long long sum = res_sign * (sign_ * (i < size_ ? bigint_[i] : 0) -
-        num_sign * (num % base_)) + carry;
-      carry = (sum < 0 ? -1 : sum / base_);
-      Put(i, (sum + base_) % base_);
-      num /= base_;
-    }
-    delZeros();
-    sign_ = res_sign;
-    return *this;
+    return *this = PlusLongLong(num, false);
   }
  
   BigInteger& operator-=(const BigInteger& num) {
-    int res_sign = (sign_ != num.sign_ ? sign_ : num.sign_ * cmp_abs_(num));
-    long long carry = 0;
-    for (size_t i = 0; i < num.size_ || carry != 0; ++i) {
-      long long sum = res_sign * (sign_ * (i < size_ ? bigint_[i] : 0) -
-        num.sign_ * (i < num.size_ ? num.bigint_[i] : 0)) + carry;
-      carry = (sum < 0 ? -1 : sum / base_);
-      Put(i, (sum + base_) % base_);
-    }
-    delZeros();
-    sign_ = res_sign;
-    return *this;
+    return *this = PlusBigInt(num, false);
   }
  
   BigInteger& operator++() {
@@ -162,10 +118,7 @@ public:
     sign_ = (sign_ == num.sign_ || (size_ == 1 && bigint_[0] == 0) ? 1 : -1);
     return *this;
   }
- 
-  //BigInteger& operator/=(const BigInteger& num) {
-  //  return *this = DivideRemainder(num, '/');
-  //}
+
   BigInteger& operator/=(const BigInteger& num) {
     int res_sign = sign_ * num.sign_;
     BigInteger divider = (num < 0 ? -num : num);
@@ -216,7 +169,7 @@ private:
   static const size_t base_ = 1000000000;
   static const size_t length_base_ = 9;
  
-  int cmp_abs_(const BigInteger& num) const { // returns 1 if abs(a) >= abs(b) returns -1 if abs(a) < abs(b)
+  int cmp_abs_(const BigInteger& num) const {
     if (size_ != num.size_)
       return (size_ > num.size_ ? 1 : -1);
     for (int i = size_ - 1; i >= 0; --i) {
@@ -242,6 +195,48 @@ private:
     }
     size_ = bigint_.size();
   }
+
+  BigInteger& PlusBigInt(const BigInteger& num, bool isPositive) {
+    int res_sign;
+    if (isPositive) {
+      res_sign = (sign_ == num.sign_ ? sign_ : sign_ * cmp_abs_(num);
+    }
+    else {
+      res_sign = (sign_ != num.sign_ ? sign_ : num.sign * cmp_abs_(num);
+    }
+    long long carry = 0;
+    for (size_t i = 0; i < num.size_ || carry != 0; ++i) {
+      long long sum = res_sign * (sign_ * (i < size_ ? bigint_[i] : 0) +
+        (isPositive ? 1 : -1) *  num.sign_ * (i < num.size_ ? num.bigint_[i] : 0))
+        + carry;
+      carry = (sum < 0 ? -1 : sum / base_);
+      Put(i, (sum + base_) % base_);
+    }
+    delZeros();
+    sign_ = res_sign;
+  }
+
+  BigInteger& PlusLongLong(long long num, bool isPositive) {
+    int num_sign = (num >= 0 ? 1 : -1);
+    int res_sign;
+    if (isPositive) {
+      res_sign = (sign_ == num_sign ? sign_ : sign_ * cmp_abs_(num));
+    }
+    else {
+      res_sign = (sign != num.sign_ ? sign_ : num.sign * cmp_abs_(num);
+    }
+    long long carry = 0;
+    for (size_t i = 0; carry != 0 || num != 0; ++i) {
+      long long sum = res_sign * (sign_ * (i < size_ ? bigint_[i] : 0) +
+        (isPositive ? 1 : -1) * num_sign * (num % base_)) + carry;
+      carry = (sum < 0 ? -1 : sum / base_);
+      Put(i, (sum + base_) % base_);
+      num /= base_;
+    }
+    delZeros();
+    sign_ = res_sign;
+    return *this;
+  }
  
   BigInteger& DivideRemainder(BigInteger num, char query) {
     int res_sign = (sign_ == num.sign_ || cmp_abs_(num) != 1 ? 1 : -1);
@@ -249,7 +244,6 @@ private:
     sign_ = 1;
     BigInteger result = 0;
     for (int ind1 = size_ - 1; ind1 >= 0; --ind1) {
-      //std::cout << ind1 << '\n';
       BigInteger div = 0;
       for (size_t i = 0; i < size_t(ind1); ++i) {
         ++div.size_;
