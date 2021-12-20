@@ -152,36 +152,19 @@ private:
   }
  
   size_t CommonFinder(const String& substr, bool is_reversed = false) const {
-    if (is_reversed) {
-      for (int i = size - substr.size; i >= 0; --i) {
-        bool flag = true;
-        for (size_t j = 0; j < substr.size; ++j) {
-          if (str[i + j] != substr[j]) {
-            flag = false;
-            break;
-          }
-        }
-        if (flag) {
-          return i;
+    for (size_t i = 0; i <= size - substr.size; ++i) {
+      bool flag = true;
+      for (size_t j = 0; j < substr.size; ++j) {
+        if (str[is_reversed ? size - substr.size - i + j : i + j] != substr[j]) {
+          flag = false;
+          break;
         }
       }
-      return size;
-    }
-    else {
-      for (size_t i = 0; i <= size - substr.size; ++i) {
-        bool flag = true;
-        for (size_t j = 0; j < substr.size; ++j) {
-          if (str[i + j] != substr[j]) {
-            flag = false;
-            break;
-          }
-        }
-        if (flag) {
-          return i;
-        }
+      if (flag) {
+        return i;
       }
-      return size;
     }
+    return size;
   }
 };
  
